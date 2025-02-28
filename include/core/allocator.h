@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <map>
 #include <unordered_set>
+#include <map>
 
 namespace infini {
   class Allocator
@@ -23,11 +24,7 @@ namespace infini {
     // pointer to the memory actually allocated
     void *ptr;
 
-    // =================================== 作业 ===================================
-    // TODO：可能需要设计一个数据结构来存储free block，以便于管理和合并
-    // HINT: 可以使用一个 map 来存储 free block，key 为 block 的起始/结尾地址，value 为 block 的大小
-    // =================================== 作业 ===================================
-
+    std::map<size_t, size_t> free_blocks; // offset -> size
   public:
     Allocator(Runtime runtime);
 

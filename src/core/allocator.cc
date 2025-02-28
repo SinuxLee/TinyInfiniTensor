@@ -29,11 +29,31 @@ namespace infini
         // pad the size to the multiple of alignment
         size = this->getAlignedSize(size);
 
-        // =================================== 作业 ===================================
-        // TODO: 设计一个算法来分配内存，返回起始地址偏移量
-        // =================================== 作业 ===================================
+        auto offset = size_t(0);
+        auto it = free_blocks.begin();
 
-        return 0;
+        while (it != free_blocks.end()) {
+            if (it->second >= size) {
+                offset = it->first;
+                free_blocks.erase(it);
+                if (it->second > size) {
+                    free_blocks[offset + size] = it->second - size;
+                }
+                break;
+            }
+            it++;
+        }
+        
+        if (it == free_blocks.end()) {
+            offset = used;
+            used += size;
+            if (used > peak) {
+                peak = used;
+            }
+        }
+
+        std::cout << "alloc: " << offset << " " << size << std::endl;
+        return offset;
     }
 
     void Allocator::free(size_t addr, size_t size)
@@ -41,9 +61,30 @@ namespace infini
         IT_ASSERT(this->ptr == nullptr);
         size = getAlignedSize(size);
 
-        // =================================== 作业 ===================================
-        // TODO: 设计一个算法来回收内存
-        // =================================== 作业 ===================================
+        auto it = free_blocks.begin(); 
+        while (it != free_blocks.end()) {
+            if (it->first + it->second == addr) {
+                addr = it->first;
+                size += it->second;
+                it = free_blocks.erase(it);
+                continue;
+            }
+            
+            if (it->first == addr + size) {
+                size += it->second;
+                it = free_blocks.erase(it);
+                continue;
+            }
+
+            it++;
+        }
+
+        std::cout << "free: " << addr << " " << size << std::endl;
+        if (addr + size >= used) {
+            used -= size;
+        }else{
+            free_blocks[addr] = size;
+        }
     }
 
     void *Allocator::getPtr()
